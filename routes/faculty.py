@@ -24,7 +24,17 @@ def faculty_login(payload: FacultyLoginRequest, response: Response):
 
     raise HTTPException(status_code=401, detail="Invalid faculty credentials")
 
-
 @router.get("/{faculty_id}/courses")
-def faculty_courses(faculty_id: str):
-    return get_faculty_courses(faculty_id)
+def faculty_courses(faculty_id: str, request: Request):
+    # 🍪 Get from cookie if not valid in path
+    cookie_id = request.cookies.get("faculty_id")
+    fid = faculty_id if faculty_id not in ["", "null", "undefined"] else cookie_id
+
+    if not fid:
+        raise HTTPException(status_code=401, detail="Faculty ID not found")
+
+    courses = get_faculty_courses(fid)
+    return {
+        "faculty_id": fid,
+        "courses": courses
+    }
